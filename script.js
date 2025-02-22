@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     const diasPorMes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     const diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-    const HOJAS = ["Administrativo", "Atención al cliente y ventas", "Cumpleaños", "Académico", "Eventos", "Marketing y Publicidad", "Financiero"];
+    const HOJAS = ["Administrativo", "SG SST", "Atención al cliente y ventas", "Cumpleaños", "Académico", "Eventos", "Marketing y Publicidad", "Financiero"];
 
     let eventos = [];
     let festivos = [];
