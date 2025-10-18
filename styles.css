@@ -1,212 +1,218 @@
-/* 🔹 Fuente y colores generales */
-body {
-    font-family: 'Roboto', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    background-color: #f2f2f2; /* Fondo Musicala */
-    color: #333333;
+/* ===========================================================
+   Estilos – Calendario Musicala (pastel, centrado, compacto)
+   =========================================================== */
+
+:root{
+  --azul-musicala:#0c41c4;
+  --azul-accent:#0b63f6;
+
+  --bg:#f6f8ff;
+  --text:#0f172a;
+  --text-sec:#475569;
+  --border:#e2e8f0;
+  --card:#ffffff;
+
+  --shadow-soft:0 6px 18px rgba(12,65,196,.08);
+  --shadow-chip:0 6px 14px rgba(11,99,246,.18);
+  --shadow-hover:0 10px 22px rgba(11,99,246,.12);
 }
 
-/* 🔹 Encabezado con logo */
-.titulo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+*{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; padding:0; }
+body{
+  font-family:"Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  background: radial-gradient(1100px 520px at 50% -10%, #e8f0ff 0%, transparent 60%), var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
 }
 
-h1 {
-    background: white;
-    padding: 15px;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+/* Helpers */
+.centered{ width:min(1200px, 100% - 32px); margin-inline:auto; }
+.hidden{ display:none !important; }
+
+/* ===========================================================
+   Header
+   =========================================================== */
+header{
+  position:sticky; top:0; z-index:10;
+  backdrop-filter:saturate(1.05) blur(6px);
+  background:rgba(255,255,255,.85);
+  border-bottom:1px solid rgba(226,232,240,.6);
+}
+header .toolbar{
+  width:min(1200px, 100% - 32px);
+  margin:0 auto; padding:8px 0;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+header .toolbar:first-child{ justify-content:flex-start; }
+header .toolbar:last-child{ justify-content:flex-end; }
+header .logo{ height:32px; object-fit:contain; } /* ⬅️ más pequeño */
+header h1{ margin:0; font-size:1.25rem; font-weight:800; color:var(--azul-musicala); }
+
+/* Botones / chips / status */
+.chip{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:7px 11px; border-radius:999px;
+  font-size:.9rem; cursor:pointer;
+  transition:transform .08s ease, background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
+  box-shadow:0 1px 0 rgba(15,23,42,.03);
+}
+.chip:hover{
+  background:var(--azul-accent);
+  color:#fff; border-color:transparent; transform:translateY(-1px);
+  box-shadow:var(--shadow-chip);
+}
+.status{ font-size:.9rem; color:var(--text-sec); }
+
+/* ===========================================================
+   Pills de categorías
+   =========================================================== */
+.pillbar{
+  width:min(1200px, 100% - 32px);
+  margin:8px auto 10px;
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center;
+}
+.pillbar .pill{
+  appearance:none; border:none; outline:none;
+  background:#e8f0ff; color:#0b63f6;
+  border:1px solid rgba(11,99,246,.18);
+  padding:7px 12px; border-radius:11px;
+  font-weight:800; font-size:.88rem; white-space:nowrap;
+  cursor:pointer;
+  transition: transform .08s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+}
+.pillbar .pill:hover{ transform:translateY(-1px); box-shadow:var(--shadow-chip); }
+.pillbar .pill:focus-visible{ outline:2px solid #93c5fd; outline-offset:2px; }
+.pillbar .pill.active{
+  background:#0b63f6; color:#fff; box-shadow:0 6px 18px rgba(11,99,246,.28);
+}
+.pillbar .pill-all{ background:#f1f5ff; color:#1e3a8a; border-color:rgba(30,58,138,.18); }
+.pillbar .pill-all.active{ background:#1e3a8a; color:#fff; }
+
+/* ===========================================================
+   Contenedor principal
+   =========================================================== */
+.container{ width:min(1200px, 100% - 32px); margin-inline:auto; padding:10px 0 28px; }
+
+/* Encabezado del mes */
+.month-header{
+  background:linear-gradient(135deg, #5c8ffc, #7aa3ff);
+  color:#fff; border-radius:14px; padding:13px; text-align:center;
+  font-weight:900; font-size:1.08rem; letter-spacing:.2px; box-shadow:var(--shadow-soft);
 }
 
-#calendario {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-    padding: 20px;
+/* Días de la semana */
+.weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-top:10px; }
+.weekday{
+  background:#eef3ff; color:#0b63f6;
+  border:1px solid rgba(11,99,246,.12);
+  border-radius:10px; text-align:center; padding:8px 0; font-weight:900; font-size:.9rem;
 }
 
-/* 🔹 Estilo de los meses */
-.mes {
-    width: 98%;
-    max-width: 1200px;
-    border: 2px solid #ccc;
-    background: white;
-    padding: 30px;
-    text-align: center;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+/* Grid del calendario */
+.grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-top:10px; }
+
+/* Día */
+.day{
+  background:var(--card); border-radius:14px; min-height:105px;
+  padding:10px 9px; display:flex; flex-direction:column; gap:7px;
+  border:1px solid var(--border);
+  box-shadow:0 2px 10px rgba(15,23,42,.04);
+  transition:transform .08s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+.day:hover{ transform:translateY(-1px); box-shadow:var(--shadow-hover); border-color:rgba(12,65,196,.22); }
+.day .num{ font-weight:900; color:var(--text); padding-left:1px; font-size:.94rem; }
+
+/* Día actual y festivos */
+.day.today{ border:2px solid var(--azul-accent); box-shadow:0 0 9px rgba(11,99,246,.22); }
+.day.today .num{ color:var(--azul-accent); }
+.day.holiday{ box-shadow:inset 0 0 0 2px rgba(217,119,6,.25); }
+
+/* ===========================================================
+   Evento (pastel) + estados
+   =========================================================== */
+.event-item{
+  display:flex; align-items:center; justify-content:space-between; gap:.55rem;
+  color:#0f172a; /* texto oscuro por fondos pasteles */
+  padding:8px 9px; border-radius:11px; font-size:.9rem;
+  border:1px solid rgba(15,23,42,.08);
+  box-shadow:0 6px 14px rgba(15,23,42,.06);
+  transition: filter .15s ease, transform .08s ease;
+  background:linear-gradient(135deg, #f8fafc, #f1f5f9); /* fallback pastel neutro */
+}
+.event-item:hover{ filter:brightness(1.02) saturate(1.03); }
+.event-item.done{ opacity:.66; filter:saturate(.78); }
+.event-item input[type="checkbox"]{
+  transform:scale(1.05); cursor:pointer; accent-color:#10b981;
 }
 
-/* 🔹 Títulos de los meses */
-.mes h3 {
-    background-color: #007BFF; /* Azul Musicala */
-    color: white;
-    margin: 0 0 15px 0;
-    padding: 18px;
-    border-radius: 8px 8px 0 0;
-    font-size: 24px;
+/* ===== Colores por categoría (pasteles) ===== */
+/* El script añade la clase `cat-<slug>` por cada evento */
+.event-item.cat-administrativo{
+  background:linear-gradient(135deg, #eaf2ff, #f3f7ff);
+  border-color:#dbe7ff;
+  color:#0b3ea8;
+}
+.event-item.cat-financiero{
+  background:linear-gradient(135deg, #e9fbef, #f2fff6);
+  border-color:#c8f3d6;
+  color:#166534;
+}
+.event-item.cat-sg-sst{
+  background:linear-gradient(135deg, #fff2e1, #fff7ea);
+  border-color:#fde4c4;
+  color:#9a5b00;
+}
+.event-item.cat-atencion-al-cliente-y-ventas{
+  background:linear-gradient(135deg, #ffe9ea, #fff2ef);
+  border-color:#ffd0d5;
+  color:#9f1239;
+}
+.event-item.cat-academico{
+  background:linear-gradient(135deg, #f1eaff, #f7f2ff);
+  border-color:#e6d6ff;
+  color:#5b21b6;
+}
+.event-item.cat-eventos{
+  background:linear-gradient(135deg, #e6fbff, #effcff);
+  border-color:#c9f2fb;
+  color:#0e7490;
+}
+.event-item.cat-cumpleanos{
+  background:linear-gradient(135deg, #ffe8f0, #fff0f6);
+  border-color:#ffd1e0;
+  color:#9d174d;
+}
+.event-item.cat-marketing-y-publicidad{
+  background:linear-gradient(135deg, #eef2f7, #f4f7fb);
+  border-color:#d7e0ea;
+  color:#334155;
 }
 
-/* 🔹 Contenedor de los días */
-.dias-container {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 5px;
+/* Leyenda */
+.legend{
+  margin-top:10px; display:flex; gap:12px; align-items:center;
+  color:var(--text-sec); font-size:.9rem; justify-content:center;
 }
+.dot{ width:11px; height:11px; border-radius:50%; background:#a5b4fc; display:inline-block; box-shadow:0 0 0 2px rgba(165,180,252,.35); }
+.dot.holiday{ background:#fbbf24; box-shadow:0 0 0 2px rgba(251,191,36,.35); }
 
-/* 🔹 Estilo de cada día */
-.dia {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: start;
-    width: 100%;
-    min-height: 120px; /* Aumentamos tamaño */
-    padding: 15px;
-    border-radius: 5px;
-    background: #f2f2f2; /* Fondo gris claro */
-    font-size: 18px;
-    font-weight: bold;
-    box-sizing: border-box;
+/* ===========================================================
+   Responsivo
+   =========================================================== */
+@media (max-width:1000px){
+  .month-header{ font-size:1rem; }
+  .weekday{ font-size:.85rem; }
 }
-
-/* 🔹 Eventos dentro de los días */
-.evento {
-    font-weight: bold;
-    padding: 8px;
-    text-align: center;
-    font-size: 14px;
-    border-radius: 5px;
-    width: 100%;
-    margin-top: 5px;
-    white-space: normal; /* Permite saltos de línea */
-    word-wrap: break-word;
+@media (max-width:780px){
+  header .toolbar:last-child{ justify-content:center; }
+  .grid{ gap:9px; }
+  .day{ min-height:96px; }
+  .event-item{ font-size:.86rem; }
 }
-
-/* 🔹 Colores para cada tipo de evento según la hoja */
-.evento-administrativo {
-    background-color: #b5dae4; /* Amarillo */
-    color: black;
-}
-
-.evento-atención-al-cliente {
-    background-color: #e25462; /* Azul */
-    color: white;
-}
-
-.evento-cumpleaños {
-    background-color: #f4abba; /* Rosa */
-    color: black;
-}
-
-.evento-académico {
-    background-color: #e1d5ea; /* Verde */
-    color: black;
-}
-
-.evento-eventos {
-    background-color: #0097b2; /* Morado */
-    color: white;
-}
-
-.evento-marketing-y-publicidad {
-    background-color: #d3c8af; /* Rojo */
-    color: black;
-}
-
-.evento-financiero {
-    background-color: #ff914d; /* Celeste */
-    color: black;
-}
-
-/* 🔹 Estilo para los eventos festivos */
-.dia.festivo {
-    background-color: #d3c8af !important; /* Beige */
-    color: black;
-}
-
-.dia.festivo .evento {
-    background-color: #664840 !important; /* Azul claro */
-    color: white;
-}
-
-/* 🔹 Texto de copyright */
-.copyright {
-    font-size: 14px;
-    color: #555555;
-    margin-top: 20px;
-}
-
-.dia.expandido {
-    min-height: auto; /* Permite que el tamaño crezca si hay eventos largos */
-}
-
-.logo {
-    width: 120px; /* Ajustamos tamaño del logo */
-    height: auto;
-}
-
-/* 🔹 Estilo para los nombres de los días de la semana */
-.dia-semana {
-    font-weight: bold;
-    background-color: #007BFF; /* Azul Musicala */
-    color: white;
-    padding: 12px;
-    border-radius: 5px;
-    text-align: center;
-}
-
-/* 🔹 Espacios vacíos antes del primer día del mes */
-.dia.vacio {
-    background: transparent;
-    border: none;
-}
-
-.botones {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.btn-hoja {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.btn-hoja:hover {
-    background-color: #0056b3;
-}
-
-/* 🔹 Día actual resaltado */
-.dia.hoy {
-    background-color: #7ed957 !important; /* Verde resaltado */
-    color: white;
-    border: 3px solid #1e7e34;
-    font-size: 20px;
-}
-
-/* 🔹 Ocultar eventos vacíos si hay errores en los datos */
-.evento:empty {
-    display: none;
+@media (max-width:560px){
+  .pillbar{ justify-content:flex-start; }
+  .weekday{ padding:7px 0; }
+  .event-item{ font-size:.84rem; }
 }
