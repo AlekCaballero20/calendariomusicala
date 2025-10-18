@@ -1,34 +1,142 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario 2025</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendario Musicala 2025</title>
+
+  <!-- Fuentes y estilos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Configuración: TSV + opciones -->
+  <script>
+    window.APP_CONFIG = {
+      MODE: 'csv',         // usamos TSV/CSV agregando varias hojas
+      POLLING_MS: 15000,   // refresco opcional
+      USE_FIREBASE_CHECKS: true,
+
+      // Hojas TSV (una por área)
+      CSV_SHEETS: [
+        { name: "Administrativo", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=554015671&single=true&output=tsv" },
+        { name: "Atención al cliente y ventas", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1905446694&single=true&output=tsv" },
+        { name: "SG SST", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=127861962&single=true&output=tsv" },
+        { name: "Financiero", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=53774575&single=true&output=tsv" },
+        { name: "Cumpleaños", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1660182246&single=true&output=tsv" },
+        { name: "Académico", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1985584362&single=true&output=tsv" },
+        { name: "Eventos", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1499850460&single=true&output=tsv" },
+        { name: "Marketing y publicidad", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1253595188&single=true&output=tsv" }
+      ],
+
+      // (Opcional) TSV de Festivos
+      FESTIVOS_TSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSssq8EruzG4Tzh8f7YsL41gzAgiM2l-zM5UlfbTHGNQk1P7sEcd4D2gvuhRMPFwL6591QLkbrS3-rz/pub?gid=1042162490&single=true&output=tsv"
+    };
+  </script>
+
+  <!-- Firebase: Auth anónimo + Realtime Database (antes de script.js) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyMU4uD3m_WwyIEXkrkD4MdX59JxWd6wI",
+      authDomain: "musicala-calendario.firebaseapp.com",
+      projectId: "musicala-calendario",
+      storageBucket: "musicala-calendario.firebasestorage.app",
+      messagingSenderId: "254603284553",
+      appId: "1:254603284553:web:5c78476c1ad41a5bc7ef98",
+      measurementId: "G-203RJ77SDS",
+      databaseURL: "https://musicala-calendario-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    try { getAnalytics(app); } catch (_) { /* Analytics opcional en local */ }
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+
+    // Login anónimo (necesario para escribir checks)
+    signInAnonymously(auth).catch(console.error);
+
+    // Helper para guardar/leer claves con tildes/ñ
+    const b64 = s => btoa(unescape(encodeURIComponent(s))).replace(/=+$/,'');
+    const pathOf = key => `checks/${b64(key)}`;
+
+    // Exponer API para script.js
+    window.fbChecks = {
+      watch(key, handler){
+        onValue(ref(db, pathOf(key)), snap => handler(!!snap.val()));
+      },
+      set(key, value){
+        return set(ref(db, pathOf(key)), !!value);
+      }
+    };
+  </script>
+
+  <!-- Lógica principal -->
+  <script defer src="script.js"></script>
 </head>
 <body>
-    <div class="botones">
-        <button class="btn-hoja" data-hoja="Administrativo">Administrativo</button>
-        <button class="btn-hoja" data-hoja="Financiero">Financiero</button>
-        <button class="btn-hoja" data-hoja="SG SST">SG SST</button>
-        <button class="btn-hoja" data-hoja="Atención al cliente y ventas">Atención al cliente y ventas</button>
-        <button class="btn-hoja" data-hoja="Cumpleaños">Cumpleaños</button>
-        <button class="btn-hoja" data-hoja="Académico">Académico</button>
-        <button class="btn-hoja" data-hoja="Eventos">Eventos</button>
-        <button class="btn-hoja" data-hoja="Marketing y Publicidad">Marketing y Publicidad</button>
-        <button class="btn-hoja" id="btn-cronograma">Cronograma Completo</button>
-    </div>   
-
-    <div class="titulo">
-        <img src="https://static.wixstatic.com/media/85afce_3adb3865c88a492b93a8bf2dc69049c3~mv2.png" 
-             alt="Logo" class="logo">
-        <h1>Calendario 2025</h1>
+  <header>
+    <div class="toolbar">
+      <img src="logo.png" alt="Musicala" class="logo" onerror="this.style.display='none'" />
+      <h1>Calendario Musicala 2025</h1>
     </div>
+    <div class="toolbar">
+      <button id="btnPrev" class="chip" type="button">◀ Anterior</button>
+      <button id="btnToday" class="chip" type="button">Hoy</button>
+      <button id="btnNext" class="chip" type="button">Siguiente ▶</button>
+      <span id="status" class="status" role="status" aria-live="polite">Cargando…</span>
+    </div>
+  </header>
 
-    <div id="calendario"></div>
-    
-    <p class="copyright">© 2025 Musicala. Todos los derechos de uso son propiedad de Musicala.</p>
+  <nav class="pillbar" aria-label="Filtrar por categoría">
+    <!-- Botón “Ver todo” -->
+    <button class="pill pill-all" id="pillAll" type="button" aria-pressed="true">Ver todo</button>
 
-    <script src="script.js"></script>
+    <!-- Categorías (deben coincidir con CSV_SHEETS[].name) -->
+    <button class="pill" type="button">Administrativo</button>
+    <button class="pill" type="button">Financiero</button>
+    <button class="pill" type="button">SG SST</button>
+    <button class="pill" type="button">Atención al cliente y ventas</button>
+    <button class="pill" type="button">Académico</button>
+    <button class="pill" type="button">Eventos</button>
+    <button class="pill" type="button">Cumpleaños</button>
+    <button class="pill" type="button">Marketing y publicidad</button>
+  </nav>
+
+  <main class="container">
+    <section class="calendar" id="calendar">
+      <div class="month-header" id="monthHeader">Enero</div>
+
+      <div class="weekdays" aria-hidden="true">
+        <div class="weekday">Dom</div>
+        <div class="weekday">Lun</div>
+        <div class="weekday">Mar</div>
+        <div class="weekday">Mié</div>
+        <div class="weekday">Jue</div>
+        <div class="weekday">Vie</div>
+        <div class="weekday">Sáb</div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="legend">
+        <span class="dot"></span> Evento
+        <span class="dot holiday"></span> Festivo
+      </div>
+    </section>
+  </main>
+
+  <!-- Template de evento (lo usa script.js) -->
+  <template id="tpl-event">
+    <div class="event-item">
+      <span class="text"></span>
+      <input type="checkbox" class="evt-check" />
+    </div>
+  </template>
 </body>
 </html>
