@@ -6,6 +6,7 @@
  * - Botón "Ver todo" + filtros por categoría
  * - Checkboxes en tiempo real (window.fbChecks)
  * - Solo muestra el nombre del evento (no el origen)
+ * - Recordatorio de tarea pendiente más reciente
  * =========================================================== */
 
 (() => {
@@ -33,6 +34,8 @@
     // Filtros
     pillAll: document.getElementById('pillAll'),
     pills: Array.from(document.querySelectorAll('.pillbar .pill:not(#pillAll)')),
+    // 🔔 Barra de recordatorio
+    reminderBar: document.getElementById('reminderBar'),
   };
 
   // -----------------------------
@@ -49,6 +52,9 @@
   // Categoría activa (slug) — null = todas
   let ACTIVE_CATEGORY = null;
 
+  // Estado de checks (Firebase) por clave
+  const CHECKS = Object.create(null);
+
   // -----------------------------
   // Utils
   // -----------------------------
@@ -62,7 +68,9 @@
   }
 
   function slugOf(cat){
-    return normalize(cat).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return normalize(cat).toLowerCase()
+      .replace(/[^a-z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'');
   }
 
   function toISO(d) {
@@ -281,6 +289,115 @@
   }
 
   // -----------------------------
+  // Recordatorio de tareas pendientes
+  // -----------------------------
+  let reminderTimer = null;
+
+  function scheduleReminderUpdate(){
+    if (reminderTimer) clearTimeout(reminderTimer);
+    reminderTimer = setTimeout(updateReminder, 150);
+  }
+
+  // Busca la tarea pendiente más “reciente” (fecha pasada más cercana a hoy)
+  function updateReminder(){
+    if (!els.reminderBar) return;
+
+    const todayISO = toISO(new Date());
+
+    // Tareas con fecha pasada y sin hacer
+    const pendientes = DATA.events.filter(ev => {
+      const iso = toISO(ev.fechaISO);
+      if (!iso) return false;
+      if (iso >= todayISO) return false; // solo cosas anteriores a hoy
+      const done = CHECKS[ev.key];
+      return !done;
+    });
+
+    if (!pendientes.length){
+      els.reminderBar.classList.add('hidden');
+      els.reminderBar.innerHTML = '';
+      return;
+    }
+
+    // La fecha pasada más cercana (ayer > anteayer)
+    pendientes.sort((a,b) => b.fechaISO.localeCompare(a.fechaISO));
+    const next = pendientes[0];
+
+    renderReminder(next);
+  }
+
+  function renderReminder(ev){
+    const iso = toISO(ev.fechaISO);
+    if (!iso || !els.reminderBar) return;
+
+    const d = new Date(iso);
+    const fmt = new Intl.DateTimeFormat('es-CO', {
+      weekday:'short',
+      day:'2-digit',
+      month:'short'
+    });
+    const fechaHumana = fmt.format(d);
+
+    els.reminderBar.innerHTML = `
+      <div class="reminder-inner" data-key="${ev.key}" data-date="${iso}">
+        <div class="reminder-main">
+          <span class="reminder-label">Recordatorio pendiente</span>
+          <div class="reminder-title">${ev.descripcion}</div>
+          <div class="reminder-meta">
+            <span>${fechaHumana}</span>
+            <span>• ${ev.origen}</span>
+          </div>
+        </div>
+        <div class="reminder-actions">
+          <label class="reminder-check">
+            <input type="checkbox" ${CHECKS[ev.key] ? 'checked' : ''}/>
+            <span>Marcar hecho</span>
+          </label>
+          <button type="button" class="reminder-jump">Ir al día</button>
+        </div>
+      </div>
+    `;
+
+    els.reminderBar.classList.remove('hidden');
+
+    const inner = els.reminderBar.querySelector('.reminder-inner');
+    if (!inner) return;
+
+    const chk = inner.querySelector('input[type="checkbox"]');
+    const btn = inner.querySelector('.reminder-jump');
+
+    // Check conectado a Firebase
+    if (chk && window.fbChecks){
+      chk.addEventListener('change', async () => {
+        try{
+          await window.fbChecks.set(ev.key, chk.checked);
+          CHECKS[ev.key] = chk.checked;
+          if (chk.checked){
+            updateReminder(); // buscar siguiente pendiente
+          }
+        }catch(e){
+          console.error(e);
+          chk.checked = !chk.checked; // rollback visual
+        }
+      });
+    }else if (chk){
+      chk.disabled = true;
+    }
+
+    // Botón "Ir al día": centra el día en el calendario y lo resalta
+    if (btn){
+      btn.addEventListener('click', () => {
+        const dayEl = document.querySelector(`.day[data-date="${iso}"]`);
+        if (dayEl){
+          dayEl.classList.add('flash-reminder');
+          dayEl.scrollIntoView({ behavior:'smooth', block:'center' });
+          setTimeout(() => dayEl.classList.remove('flash-reminder'), 1200);
+        }
+      });
+    }
+  }
+
+  // -----------------------------
   // Filtros (píldoras + Ver todo)
   // -----------------------------
   function bindPillFilters(){
@@ -290,7 +407,10 @@
         ACTIVE_CATEGORY = null;
         els.pillAll.classList.add('active');
         els.pillAll.setAttribute('aria-pressed','true');
-        els.pills.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed','false'); });
+        els.pills.forEach(x => {
+          x.classList.remove('active');
+          x.setAttribute('aria-pressed','false');
+        });
         renderMonth(CURRENT);
         setStatus('Mostrando todas las categorías');
       });
@@ -344,7 +464,10 @@
       map.get(iso).push(ev);
     }
     for (const list of map.values()) {
-      list.sort((a,b)=> normalize(a.origen).localeCompare(normalize(b.origen)) || normalize(a.descripcion).localeCompare(normalize(b.descripcion)));
+      list.sort((a,b)=>
+        normalize(a.origen).localeCompare(normalize(b.origen)) ||
+        normalize(a.descripcion).localeCompare(normalize(b.descripcion))
+      );
     }
     return map;
   }
@@ -376,7 +499,7 @@
     // Solo nombre del evento
     textSpan.textContent = ev.descripcion;
 
-    // ✅ Clase de color por categoría (aplica estilos CSS cat-*)
+    // Clase de color por categoría (aplica estilos CSS cat-*)
     const slug = slugOf(ev.origen);
     item.classList.add(`cat-${slug}`);
     item.title = ev.origen; // hint al pasar el mouse
@@ -384,13 +507,19 @@
     // Día “hecho” en tiempo real
     if (window.fbChecks) {
       window.fbChecks.watch(ev.key, (val) => {
-        chk.checked = !!val;
-        item.classList.toggle('done', !!val);
+        const checked = !!val;
+        CHECKS[ev.key] = checked;
+        chk.checked = checked;
+        item.classList.toggle('done', checked);
+        scheduleReminderUpdate();
       });
 
       chk.addEventListener('change', async () => {
         try {
           await window.fbChecks.set(ev.key, chk.checked);
+          CHECKS[ev.key] = chk.checked;
+          item.classList.toggle('done', chk.checked);
+          scheduleReminderUpdate();
         } catch (e) {
           console.error(e);
           chk.checked = !chk.checked; // rollback
@@ -432,6 +561,9 @@
 
       const iso = toISO(day);
 
+      // guardamos la fecha en el DOM para poder “saltar” desde el recordatorio
+      cell.dataset.date = iso;
+
       if (holi.has(iso)) {
         cell.classList.add('holiday');
       }
@@ -452,6 +584,9 @@
 
       els.grid.appendChild(cell);
     }
+
+    // Cada vez que se pinta el mes, recalculamos recordatorio
+    scheduleReminderUpdate();
   }
 
   // -----------------------------
