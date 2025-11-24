@@ -216,3 +216,112 @@ header h1{ margin:0; font-size:1.25rem; font-weight:800; color:var(--azul-musica
   .weekday{ padding:7px 0; }
   .event-item{ font-size:.84rem; }
 }
+
+/* ===========================================================
+   Recordatorio de tareas pendientes
+   =========================================================== */
+
+.reminder{
+  width:min(1200px, 100% - 32px);
+  margin:10px auto 0;
+}
+
+.reminder-inner{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:linear-gradient(135deg, #fff7ed, #e0f2fe);
+  border:1px solid rgba(251,146,60,.45);
+  box-shadow:0 8px 18px rgba(15,23,42,.08);
+}
+
+.reminder-label{
+  font-size:.78rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#9a3412;
+}
+
+.reminder-title{
+  font-weight:800;
+  font-size:.95rem;
+  color:var(--text);
+  margin-top:2px;
+}
+
+.reminder-meta{
+  font-size:.82rem;
+  color:var(--text-sec);
+  margin-top:4px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.reminder-actions{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+}
+
+.reminder-check{
+  font-size:.8rem;
+  color:var(--text-sec);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+}
+
+.reminder-check input[type="checkbox"]{
+  transform:scale(1.1);
+  cursor:pointer;
+  accent-color:#10b981;
+}
+
+.reminder-jump{
+  border:none;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+  background:#0b63f6;
+  color:#fff;
+  box-shadow:var(--shadow-chip);
+  transition:transform .08s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.reminder-jump:hover{
+  transform:translateY(-1px);
+  box-shadow:var(--shadow-hover);
+  background:#0c41c4;
+}
+
+@media (max-width:600px){
+  .reminder-inner{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .reminder-actions{
+    width:100%;
+    flex-direction:row;
+    justify-content:space-between;
+  }
+}
+
+/* Efecto de “resaltado” cuando saltamos al día desde el recordatorio */
+.flash-reminder{
+  animation:flashRing .9s ease-out 0s 2;
+}
+
+@keyframes flashRing{
+  0%   { box-shadow:0 0 0 0 rgba(14,116,144,0); }
+  40%  { box-shadow:0 0 0 3px rgba(14,116,144,.35); }
+  100% { box-shadow:0 0 0 0 rgba(14,116,144,0); }
+}
